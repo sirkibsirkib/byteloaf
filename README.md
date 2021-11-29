@@ -7,12 +7,13 @@ its contents can be arbitrarily partitioned into slices, which can be passed aro
 Concretely, a single-part loaf can be created, and treated as a mutable byte buffer as usual.
 ```rust
 let x = LoafPart::new(5);
+let slice = x.as_slice_mut();
 
-x.as_slice().write_all(b"hello").unwrap();
-assert_eq!(x.as_slice(), b"hello");
+slice.write_all(b"hello").unwrap();
+assert_eq!(slice, b"hello");
 
-x.as_slice_mut()[3] = b'Q';
-assert_eq!(x.as_slice(), b"helQo");
+slice[3] = b'Q';
+assert_eq!(slice, b"helQo");
 ```
 
 Ownership of the loaf's bytes can be further sub-divided by splitting existing parts.
