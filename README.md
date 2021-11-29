@@ -1,22 +1,35 @@
-# Byteloaf
+# Byte Loaf 🍞
 
 ## What
-This library provides types for safely managing access to a heap-allocated 'loaf' of contiguous bytes, accessible via slicing.
+This library lets one treat a heap-allocated byte buffer as a loaf of bread; its contents can be arbitrarily partitioned into slices.
+
+Concretely, a single-part loaf can be created, and treated as a mutable byte buffer as usual.
 ```rust
-let a = LoafSlice::new(32);
-assert_eq!(a.as_slice().len(), 32);
+let x = LoafPart::new(5);
+
+x.as_slice().write_all(b"hello").unwrap();
+assert_eq!(x.as_slice(), b"hello");
+
+x.as_slice_mut()[3] = b'Q';
+assert_eq!(x.as_slice(), b"helQo");
 ```
 
-Slices can be split at a relative index, safely subdividing access to the underlying loaf.
+Ownership of the loaf's bytes can be further sub-divided by splitting existing parts.
 ```rust
-let a = LoafSlice::new(32);
-let [a, b] = a.slice_at(30);
-assert_eq!(a.as_slice().len(), 30);
-assert_eq!(b.as_slice().len(),  2);
+let y = x.split_at(3);
+assert_eq!(x.as_slice(), b"hel"  );
+assert_eq!(y.as_slice(),    b"lo");
 ```
 
-Slices share ownership of their loaves, so they can be moved around hassle-free. The loaf is freed as the last of its slices is dropped.
-
+For parts owning contiguous bytes, their sub-division of ownership can be re-drawn, or joined into one part.
+```rust
+x.with_try_resplit_at(y, 0..4).unwrap();
+assert_eq!(x.as_slice(), b"hell" );
+assert_eq!(y.as_slice(),     b"o");
+let z = x.with_try_join(y).unwrap();
+assert_eq!(z.as_slice(), b"hello");
+```
 
 ## Why
-This library was created for use as part of another project, which needed an input buffer for reading TCP sequents which encode large, serialized data structures. Rather than reading into a `Vec<u8>`, it's handy to subdivide the input buffer, such that partially-received message data can be left in-place to be constructed later, while other messages arrive. 
+This library was created as a utility for storing independently-owned byte slices, while minimizing the number of heap allocations.
+For example, this is useful for hanging onto the contents of sent UDP datagrams until their receipt is acknowledged later.
