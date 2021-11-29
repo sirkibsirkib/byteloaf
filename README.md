@@ -1,7 +1,8 @@
 # Byte Loaf 🍞
 
 ## What
-This library lets one treat a heap-allocated byte buffer as a loaf of bread; its contents can be arbitrarily partitioned into slices.
+This library lets one treat a heap-allocated byte buffer as a loaf of bread 🍞;
+its contents can be arbitrarily partitioned into slices, which can be passed around, accessed, and owned independently.
 
 Concretely, a single-part loaf can be created, and treated as a mutable byte buffer as usual.
 ```rust
